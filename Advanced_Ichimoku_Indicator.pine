@@ -1,0 +1,37 @@
+//@version=4
+study("Advanced Ichimoku Cloud", shorttitle="AIC", overlay=true)
+
+// Ichimoku settings
+tenkanLen = input(9, title="Tenkan Sen")
+kijunLen = input(26, title="Kijun Sen")
+senkouLen = input(52, title="Senkou Span B")
+chikouLen = input(26, title="Chikou Span")
+
+// Calculating Ichimoku lines
+tenkanSen = (highest(high, tenkanLen) + lowest(low, tenkanLen)) / 2
+kijunSen = (highest(high, kijunLen) + lowest(low, kijunLen)) / 2
+senkouSpanA = (tenkanSen + kijunSen) / 2
+senkouSpanB = (highest(high, senkouLen) + lowest(low, senkouLen)) / 2
+chikouSpan = close[chikouLen]
+
+// Plotting Ichimoku lines
+plot(tenkanSen, color=color.red, title="Tenkan Sen")
+plot(kijunSen, color=color.blue, title="Kijun Sen")
+plot(senkouSpanA, color=color.green, title="Senkou Span A", offset=chikouLen)
+plot(senkouSpanB, color=color.orange, title="Senkou Span B", offset=chikouLen)
+plot(chikouSpan, color=color.purple, title="Chikou Span", offset=-chikouLen)
+
+// Filling the Cloud with color-coding
+cloudColor = senkouSpanA > senkouSpanB ? color.green : color.red
+fill(plot1=senkouSpanA, plot2=senkouSpanB, color=cloudColor, transp=80)
+
+// Signal Alerts
+bullishSignal = crossover(close, senkouSpanA) and (close > senkouSpanA)
+bearishSignal = crossunder(close, senkouSpanA) and (close < senkouSpanA)
+
+alertcondition(bullishSignal, title="Buy Signal", message="Bullish crossover detected")
+alertcondition(bearishSignal, title="Sell Signal", message="Bearish crossunder detected")
+
+// Plot signals on chart
+plotshape(bullishSignal, title="Buy Signal", location=location.belowbar, color=color.green, style=shape.labelup, text="BUY")
+plotshape(bearishSignal, title="Sell Signal", location=location.abovebar, color=color.red, style=shape.labeldown, text="SELL")
